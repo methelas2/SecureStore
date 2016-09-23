@@ -1,6 +1,6 @@
 apply plugin: 'com.android.library'
 
-def VERSION = '1.0.3'
+def VERSION = '1.0.4'
 
 ext {
 
@@ -13,8 +13,8 @@ ext {
 
     libraryDescription = 'Allows to store sensitive informations '
 
-    siteUrl = 'https://bitbucket.org/methelas/securestore'
-    gitUrl = 'https://methelas@bitbucket.org/methelas/securestore.git'
+    siteUrl = 'https://github.com/methelas/SecureStore'
+    gitUrl = 'https://github.com/methelas/SecureStore.git'
 
     libraryVersion = VERSION
 
@@ -34,8 +34,8 @@ android {
     defaultConfig {
         minSdkVersion 19
         targetSdkVersion 24
-        versionCode 1
-        versionName "1.0"
+        versionCode 6
+        versionName VERSION
     }
     buildTypes {
         release {
