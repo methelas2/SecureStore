@@ -27,7 +27,7 @@ import java.util.Calendar;
 import javax.security.auth.x500.X500Principal;
 
 /**
- * Created by Łukasz Nowak on 23.09.16.
+ * Created by methelas on 23.09.16.
  */
 class Utils {
 

@@ -32,7 +32,7 @@ import javax.crypto.CipherInputStream;
 import javax.crypto.CipherOutputStream;
 
 /**
- * Created by Łukasz Nowak on 23.09.16.
+ * Created by methelas on 23.09.16.
  */
 public class SecureStore {
 
