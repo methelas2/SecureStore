@@ -20,6 +20,8 @@ import android.content.Context;
 
 import com.methelas.utilities.securestore.exceptions.AlreadyDefinedAliasException;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -28,13 +30,14 @@ import java.security.PrivateKey;
 import java.security.interfaces.RSAPublicKey;
 
 import javax.crypto.Cipher;
-import javax.crypto.CipherInputStream;
-import javax.crypto.CipherOutputStream;
 
 /**
  * Created by methelas on 23.09.16.
  */
 public class SecureStore {
+
+    private static int BLOCK_SIZE_ENCRYPT = 100;
+    private static int BLOCK_SIZE_DECRYPT = 256;
 
     // ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===
 
@@ -67,13 +70,30 @@ public class SecureStore {
             KeyStore.PrivateKeyEntry privateKeyEntry = (KeyStore.PrivateKeyEntry) keyStore.getEntry(alias, null);
             RSAPublicKey publicKey = (RSAPublicKey) privateKeyEntry.getCertificate().getPublicKey();
 
-            Cipher outputCipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+            Cipher outputCipher = Cipher.getInstance("RSA/NONE/PKCS1Padding");
             outputCipher.init(Cipher.ENCRYPT_MODE, publicKey);
 
-            CipherOutputStream cos = new CipherOutputStream(
-                    new FileOutputStream(directory), outputCipher);
-            cos.write(data.getBytes("UTF-8"));
-            cos.close();
+            byte[] dataAsBytes = data.getBytes("UTF-8");
+            int fullBlocks = dataAsBytes.length / BLOCK_SIZE_ENCRYPT;
+            byte[] dataEncrypted = new byte[0];
+
+            for (int i = 0; i < fullBlocks; i++) {
+
+                byte[] encryptedPart =
+                        outputCipher.doFinal(dataAsBytes, i * BLOCK_SIZE_ENCRYPT, BLOCK_SIZE_ENCRYPT);
+
+                dataEncrypted = Utils.appendByteArrays(dataEncrypted, encryptedPart);
+            }
+
+            byte[] encryptedPart =
+                    outputCipher.doFinal(dataAsBytes, fullBlocks * BLOCK_SIZE_ENCRYPT, dataAsBytes.length - fullBlocks * BLOCK_SIZE_ENCRYPT);
+
+            dataEncrypted = Utils.appendByteArrays(dataEncrypted, encryptedPart);
+
+            BufferedOutputStream bos = new BufferedOutputStream(new FileOutputStream(new File(directory)));
+            bos.write(dataEncrypted);
+            bos.flush();
+            bos.close();
 
             return true;
 
@@ -103,20 +123,17 @@ public class SecureStore {
             KeyStore.PrivateKeyEntry privateKeyEntry = (KeyStore.PrivateKeyEntry) keyStore.getEntry(alias, null);
             PrivateKey privateKey = (PrivateKey) privateKeyEntry.getPrivateKey();
 
-            Cipher inputCipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
+            Cipher inputCipher = Cipher.getInstance("RSA/NONE/PKCS1Padding");
             inputCipher.init(Cipher.DECRYPT_MODE, privateKey);
 
-            CipherInputStream cis =
-                    new CipherInputStream(new FileInputStream(directory),
-                            inputCipher);
+            BufferedInputStream bis = new BufferedInputStream(new FileInputStream(new File(directory)));
 
-            byte[] buffer = new byte[1000];
-            int bufferSize = 0;
+            byte[] buffer = new byte[BLOCK_SIZE_DECRYPT];
             String result = "";
-            while ((bufferSize = cis.read(buffer)) != -1) {
-                result += new String(buffer, 0, bufferSize, "UTF-8");
+            while (bis.read(buffer) != -1) {
+                result += new String(inputCipher.doFinal(buffer), "UTF-8");
             }
-            cis.close();
+            bis.close();
 
             return result;
 
