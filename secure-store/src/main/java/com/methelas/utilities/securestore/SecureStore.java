@@ -38,6 +38,18 @@ public class SecureStore {
 
     // ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===
 
+    /**
+     * Allows to store data in applications files directory, ciphered using key stored in
+     * AndroidKeyStore
+     *
+     * @param ctx      activity context
+     * @param alias    name for stored data
+     * @param validity counted in MONTHS,
+     *                 eq. validity == 5 means the record will be accessible for 5 months
+     * @param data     to be secured in a form of @see {@link String}
+     * @return true if inserted correctly, false otherwise
+     * @throws AlreadyDefinedAliasException when data under given alias already exists in this application
+     */
     public static boolean insert(Context ctx, String alias, int validity, String data) throws AlreadyDefinedAliasException {
 
         final String directory = ctx.getFilesDir().getAbsolutePath() + File.separator + alias;
@@ -73,6 +85,13 @@ public class SecureStore {
 
     // ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===
 
+    /**
+     * Allows to extract data stored under given alias
+     *
+     * @param ctx   activity context
+     * @param alias of the stored data
+     * @return stored data or null if data does not exist or is corrupted
+     */
     public static String extract(Context ctx, String alias) {
 
         final String directory = ctx.getFilesDir().getAbsolutePath() + File.separator + alias;
@@ -81,7 +100,7 @@ public class SecureStore {
             KeyStore keyStore = KeyStore.getInstance("AndroidKeystore");
             keyStore.load(null);
 
-            KeyStore.PrivateKeyEntry privateKeyEntry = (KeyStore.PrivateKeyEntry)keyStore.getEntry(alias, null);
+            KeyStore.PrivateKeyEntry privateKeyEntry = (KeyStore.PrivateKeyEntry) keyStore.getEntry(alias, null);
             PrivateKey privateKey = (PrivateKey) privateKeyEntry.getPrivateKey();
 
             Cipher inputCipher = Cipher.getInstance("RSA/ECB/PKCS1Padding");
@@ -109,12 +128,25 @@ public class SecureStore {
 
     // ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===
 
-    public static boolean delete(String alias) {
+    /**
+     * Deletes data stored under given alias
+     *
+     * @param ctx   activity context
+     * @param alias of the stored data
+     * @return true if data was deleted completely, false otherwise
+     */
+    public static boolean delete(Context ctx, String alias) {
+
+        final String directory = ctx.getFilesDir().getAbsolutePath() + File.separator + alias;
+
         try {
             KeyStore keyStore = KeyStore.getInstance("AndroidKeystore");
             keyStore.load(null);
 
             keyStore.deleteEntry(alias);
+
+            File f = new File(directory);
+            f.delete();
 
             return true;
 
