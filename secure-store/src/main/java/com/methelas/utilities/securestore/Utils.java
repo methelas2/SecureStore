@@ -41,7 +41,7 @@ class Utils {
             KeyPairGeneratorSpec spec = new KeyPairGeneratorSpec.Builder(ctx)
                     .setAlias(alias)
                     .setKeyType("RSA")
-                    .setKeySize(2048)
+                    .setKeySize(1024)
                     .setSubject(new X500Principal("CN=" + alias))
                     .setSerialNumber(BigInteger.ONE)
                     .setStartDate(validityStart.getTime())

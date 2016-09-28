@@ -37,7 +37,7 @@ import javax.crypto.Cipher;
 public class SecureStore {
 
     private static int BLOCK_SIZE_ENCRYPT = 100;
-    private static int BLOCK_SIZE_DECRYPT = 256;
+    private static int BLOCK_SIZE_DECRYPT = 128;
 
     // ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===
 
@@ -160,10 +160,12 @@ public class SecureStore {
             KeyStore keyStore = KeyStore.getInstance("AndroidKeystore");
             keyStore.load(null);
 
-            keyStore.deleteEntry(alias);
+            if (keyStore.containsAlias(alias))
+                keyStore.deleteEntry(alias);
 
             File f = new File(directory);
-            f.delete();
+            if (f.exists())
+                f.delete();
 
             return true;
 

@@ -3,4 +3,4 @@ Allows to store sensitive informations as ciphered files in application files di
 
 ## Adding it to your project
 
-    compile 'com.methelas.utilities:secure-store:1.0.5'
+    compile 'com.methelas.utilities:secure-store:1.0.6’
