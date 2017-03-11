@@ -17,6 +17,7 @@ limitations under the License.
  */
 
 import android.content.Context;
+import android.os.AsyncTask;
 
 import com.methelas.utilities.securestore.exceptions.AlreadyDefinedAliasException;
 
@@ -40,6 +41,27 @@ public class SecureStore {
     private static int BLOCK_SIZE_DECRYPT = 128;
 
     // ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===
+
+    public static void insertAsync(final Context ctx, final String alias, final int validity, final String data, final SecureStoreInsertListener listener) {
+
+        new AsyncTask<Object, Object, Boolean>() {
+            @Override
+            protected Boolean doInBackground(Object... params) {
+                try {
+                    return insert(ctx, alias, validity, data);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return false;
+                }
+            }
+
+            @Override
+            protected void onPostExecute(Boolean aVoid) {
+                if (listener != null)
+                    listener.onInsertFinished(aVoid);
+            }
+        }.execute();
+    }
 
     /**
      * Allows to store data in applications files directory, ciphered using key stored in
@@ -104,6 +126,27 @@ public class SecureStore {
     }
 
     // ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===
+
+    public static void extractAsync(final Context ctx, final String alias, final SecureStoreExtractListener listener) {
+
+        new AsyncTask<Object, Object, String>() {
+            @Override
+            protected String doInBackground(Object... params) {
+                try {
+                    return extract(ctx, alias);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return null;
+                }
+            }
+
+            @Override
+            protected void onPostExecute(String aVoid) {
+                if (listener != null)
+                    listener.onExtractFinished(aVoid);
+            }
+        }.execute();
+    }
 
     /**
      * Allows to extract data stored under given alias
@@ -176,5 +219,15 @@ public class SecureStore {
     }
 
     // ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===
+    // LISTENER
+    // ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===== ===
+
+    public interface SecureStoreInsertListener {
+        void onInsertFinished(boolean isSuccess);
+    }
+
+    public interface SecureStoreExtractListener {
+        void onExtractFinished(String result);
+    }
 
 }
